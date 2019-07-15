@@ -2148,6 +2148,7 @@ public class CssTranslator {
         return max;
     }
 
+    @SuppressWarnings("PMD.SystemPrintln")
     public static void main(String[] args) throws IOException, TransformerException {
         if (args.length != 2) {
             System.err.println("Usage: CssTranslator <input.css> <output.sld>");
@@ -2169,7 +2170,7 @@ public class CssTranslator {
 
         long start = System.currentTimeMillis();
 
-        String css = FileUtils.readFileToString(input);
+        String css = FileUtils.readFileToString(input, "UTF-8");
         Stylesheet styleSheet = CssParser.parse(css);
 
         java.util.logging.ConsoleHandler handler = new java.util.logging.ConsoleHandler();

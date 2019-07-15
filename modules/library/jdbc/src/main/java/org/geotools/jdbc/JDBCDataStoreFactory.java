@@ -97,7 +97,7 @@ public abstract class JDBCDataStoreFactory implements DataStoreFactorySpi {
                     Integer.class,
                     "maximum number of open connections",
                     false,
-                    new Integer(10));
+                    Integer.valueOf(10));
 
     /** Minimum number of connections in the connection pool */
     public static final Param MINCONN =
@@ -106,7 +106,7 @@ public abstract class JDBCDataStoreFactory implements DataStoreFactorySpi {
                     Integer.class,
                     "minimum number of pooled connection",
                     false,
-                    new Integer(1));
+                    Integer.valueOf(1));
 
     /** If connections should be validated before using them */
     public static final Param VALIDATECONN =
@@ -312,6 +312,7 @@ public abstract class JDBCDataStoreFactory implements DataStoreFactorySpi {
         // fetch size
         Integer fetchSize = (Integer) FETCHSIZE.lookUp(params);
         if (fetchSize != null && fetchSize > 0) dataStore.setFetchSize(fetchSize);
+        else dataStore.setFetchSize((Integer) FETCHSIZE.sample);
 
         Integer batchInsertSize = (Integer) BATCH_INSERT_SIZE.lookUp(params);
         if (batchInsertSize != null && batchInsertSize > 0) {

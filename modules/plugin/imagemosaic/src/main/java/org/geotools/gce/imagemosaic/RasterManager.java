@@ -693,13 +693,7 @@ public class RasterManager implements Cloneable {
             return domainName;
         }
 
-        /**
-         * Add a domain to the manager
-         *
-         * @param domain the name of the domain
-         * @param propertyName
-         * @param featureType
-         */
+        /** Add a domain to the manager */
         private DimensionDescriptor addDomain(
                 String name,
                 String propertyName,
@@ -1011,8 +1005,7 @@ public class RasterManager implements Cloneable {
         // granuleCatalog = new HintedGranuleCatalog(parentReader.granuleCatalog, hints);
         granuleCatalog = parentReader.granuleCatalog;
         this.coverageFactory = parentReader.getGridCoverageFactory();
-        this.coverageIdentifier =
-                configuration != null ? configuration.getName() : ImageMosaicReader.UNSPECIFIED;
+        this.coverageIdentifier = configuration.getName();
         pathType = configuration.getCatalogConfigurationBean().getPathType();
 
         extractOverviewPolicy();
@@ -1112,7 +1105,8 @@ public class RasterManager implements Cloneable {
                 update = true;
             }
             if (update
-                    && !configuration.getCatalogConfigurationBean().isAbsolutePath()
+                    && (configuration.getCatalogConfigurationBean().getPathType()
+                            != PathType.ABSOLUTE)
                     && !hints.containsKey(Utils.PARENT_DIR)) {
                 String parentDir = null;
                 if (parentReader.parentDirectory != null) {
@@ -1524,7 +1518,7 @@ public class RasterManager implements Cloneable {
                             reader.removeCoverage(coverageName, false);
                         }
                     } else if (deleteData) {
-                        final boolean removed = FileUtils.deleteQuietly(URLs.urlToFile(rasterPath));
+                        FileUtils.deleteQuietly(URLs.urlToFile(rasterPath));
                     }
                 } finally {
                     if (coverageReader != null) {

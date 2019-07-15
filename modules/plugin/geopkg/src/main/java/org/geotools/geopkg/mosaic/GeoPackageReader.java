@@ -47,7 +47,6 @@ import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.operator.MosaicDescriptor;
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
@@ -88,8 +87,6 @@ public class GeoPackageReader extends AbstractGridCoverage2DReader {
 
     protected static final int ZOOM_LEVEL_BASE = 2;
 
-    protected GridCoverageFactory coverageFactory;
-
     protected File sourceFile;
 
     protected Map<String, TileEntry> tiles = new LinkedHashMap<String, TileEntry>();
@@ -108,6 +105,16 @@ public class GeoPackageReader extends AbstractGridCoverage2DReader {
         // have a sane default when hit with no name, useful in particular
         // when the geopackage only has one coverage
         coverageName = tiles.keySet().iterator().next();
+        // add the overview count and allocate the
+        final List<TileMatrix> tileMatricies = tiles.get(coverageName).getTileMatricies();
+        this.numOverviews = tileMatricies.size() - 1;
+        overViewResolutions = new double[numOverviews][2];
+        // first tile matrix is the one with the lowest resolution, last one is native
+        for (int i = 0; i < tileMatricies.size() - 1; i++) {
+            final TileMatrix matrix = tileMatricies.get(i);
+            overViewResolutions[tileMatricies.size() - i - 2] =
+                    new double[] {matrix.getXPixelSize(), matrix.getYPixelSize()};
+        }
     }
 
     @Override
@@ -206,7 +213,6 @@ public class GeoPackageReader extends AbstractGridCoverage2DReader {
                                 ReferencedEnvelope.create(
                                                 gg.getEnvelope(), gg.getCoordinateReferenceSystem())
                                         .transform(crs, true);
-                        ;
                     } catch (Exception e) {
                         requestedEnvelope = null;
                     }

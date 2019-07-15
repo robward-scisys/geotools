@@ -19,7 +19,6 @@ package org.geotools.gce.geotiff;
 
 import it.geosolutions.imageio.maskband.DatasetLayout;
 import it.geosolutions.imageio.utilities.ImageIOUtilities;
-import it.geosolutions.jaiext.JAIExt;
 import it.geosolutions.jaiext.range.NoDataContainer;
 import it.geosolutions.jaiext.range.Range;
 import java.awt.Color;
@@ -61,12 +60,15 @@ import org.geotools.data.DataSourceException;
 import org.geotools.data.PrjFileReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.image.ImageWorker;
+import org.geotools.image.util.ImageUtilities;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.projection.Sinusoidal;
 import org.geotools.referencing.operation.transform.ProjectiveTransform;
 import org.geotools.test.TestData;
+import org.geotools.util.factory.GeoTools;
 import org.geotools.util.factory.Hints;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -100,14 +102,12 @@ public class GeoTiffReaderTest extends org.junit.Assert {
     public void saveGlobals() {
         oldOverrideInnerCRS = GeoTiffReader.OVERRIDE_INNER_CRS;
         GeoTiffReader.OVERRIDE_INNER_CRS = true;
-        JAIExt.initJAIEXT(true, true);
     }
 
     @After
     public void cleanupGlobals() {
         System.clearProperty(GeoTiffReader.OVERRIDE_CRS_SWITCH);
         GeoTiffReader.OVERRIDE_INNER_CRS = oldOverrideInnerCRS;
-        JAIExt.initJAIEXT(false, true);
     }
 
     /**
@@ -420,6 +420,7 @@ public class GeoTiffReaderTest extends org.junit.Assert {
         assertNotNull(file);
         final AbstractGridFormat format = new GeoTiffFormat();
         GridCoverage2D coverage = format.getReader(file).read(null);
+
         String band1Name = coverage.getSampleDimension(0).getDescription().toString();
         String band2Name = coverage.getSampleDimension(1).getDescription().toString();
         assertEquals("Band1", band1Name);
@@ -1029,13 +1030,22 @@ public class GeoTiffReaderTest extends org.junit.Assert {
     }
 
     @Test
+    public void testCoverageName() throws Exception {
+        final File file = TestData.file(GeoTiffReaderTest.class, "wind.tiff");
+        assertNotNull(file);
+
+        GeoTiffReader reader = new GeoTiffReader(file, GeoTools.getDefaultHints());
+        assertTrue(reader.checkName("geotiff_coverage"));
+    }
+
+    @Test
     //    @Ignore
     public void testExternalOverviews() throws Exception {
         final File file = TestData.file(GeoTiffReaderTest.class, "ovr.tif");
         assertNotNull(file);
         assertEquals(true, file.exists());
         GeoTiffReader reader = new GeoTiffReader(file);
-        final int nOvrs = reader.getNumOverviews();
+        final int nOvrs = reader.getDatasetLayout().getNumExternalOverviews();
         LOGGER.info("Number of external overviews: " + nOvrs);
         assertEquals(4, nOvrs);
         double[][] availableResolutions = reader.getResolutionLevels();
@@ -1220,6 +1230,46 @@ public class GeoTiffReaderTest extends org.junit.Assert {
         } finally {
             if (reader != null) {
                 reader.dispose();
+            }
+        }
+    }
+
+    @Test
+    public void testScaleOffset() throws IllegalArgumentException, IOException, FactoryException {
+        // prepare reader
+        final File scaleOffset = TestData.file(GeoTiffReaderTest.class, "scaleOffset.tif");
+        GeoTiffReader reader = new GeoTiffReader(scaleOffset);
+
+        // read with explicit request not to rescale
+        GridCoverage2D coverage = null;
+        try {
+            ParameterValue<Boolean> rescalePixels = AbstractGridFormat.RESCALE_PIXELS.createValue();
+            rescalePixels.setValue(false);
+            coverage = reader.read(new GeneralParameterValue[] {rescalePixels});
+            ImageWorker iw = new ImageWorker(coverage.getRenderedImage());
+            double[] maximums = iw.getMaximums();
+            // the max is 255
+            assertArrayEquals(new double[] {6020, 6020, 6020, 1, 0, 10000}, maximums, 0d);
+        } finally {
+            if (coverage != null) {
+                ImageUtilities.disposeImage(coverage.getRenderedImage());
+                coverage.dispose(true);
+            }
+        }
+
+        // do the same with rescaling
+        try {
+            ParameterValue<Boolean> rescalePixels = AbstractGridFormat.RESCALE_PIXELS.createValue();
+            rescalePixels.setValue(true);
+            coverage = reader.read(new GeneralParameterValue[] {rescalePixels});
+            ImageWorker iw = new ImageWorker(coverage.getRenderedImage());
+            double[] maximums = iw.getMaximums();
+            // the max is 255
+            assertArrayEquals(new double[] {0.602, 0.602, 0.602, 0.0001, 0, 1}, maximums, 0d);
+        } finally {
+            if (coverage != null) {
+                ImageUtilities.disposeImage(coverage.getRenderedImage());
+                coverage.dispose(true);
             }
         }
     }

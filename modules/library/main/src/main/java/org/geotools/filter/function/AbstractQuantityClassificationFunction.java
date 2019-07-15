@@ -1,3 +1,19 @@
+/*
+ *    GeoTools - The Open Source Java GIS Toolkit
+ *    http://geotools.org
+ *
+ *    (C) 2019, Open Source Geospatial Foundation (OSGeo)
+ *
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation;
+ *    version 2.1 of the License.
+ *
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    Lesser General Public License for more details.
+ */
 package org.geotools.filter.function;
 
 import java.io.IOException;
@@ -92,24 +108,26 @@ public abstract class AbstractQuantityClassificationFunction extends Classificat
             decPlaces = Math.max(decPlaces, decimalPlaces(((Number) localMax[i]).doubleValue()));
             // clean up truncation error
             if (decPlaces > -1) {
-                localMin[i] = new Double(round(((Number) localMin[i]).doubleValue(), decPlaces));
-                localMax[i] = new Double(round(((Number) localMax[i]).doubleValue(), decPlaces));
+                localMin[i] =
+                        Double.valueOf(round(((Number) localMin[i]).doubleValue(), decPlaces));
+                localMax[i] =
+                        Double.valueOf(round(((Number) localMax[i]).doubleValue(), decPlaces));
             }
 
             if (i == 0) {
                 // ensure first min is less than or equal to globalMin
-                if (localMin[i].compareTo(new Double(((Number) globalMin).doubleValue())) > 0)
+                if (localMin[i].compareTo(Double.valueOf(((Number) globalMin).doubleValue())) > 0)
                     localMin[i] =
-                            new Double(
+                            Double.valueOf(
                                     fixRound(
                                             ((Number) localMin[i]).doubleValue(),
                                             decPlaces,
                                             false));
             } else if (i == classNum - 1) {
                 // ensure last max is greater than or equal to globalMax
-                if (localMax[i].compareTo(new Double(((Number) globalMax).doubleValue())) < 0)
+                if (localMax[i].compareTo(Double.valueOf(((Number) globalMax).doubleValue())) < 0)
                     localMax[i] =
-                            new Double(
+                            Double.valueOf(
                                     fixRound(
                                             ((Number) localMax[i]).doubleValue(), decPlaces, true));
             }

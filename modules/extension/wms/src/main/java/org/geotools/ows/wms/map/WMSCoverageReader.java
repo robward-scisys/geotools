@@ -1,3 +1,19 @@
+/*
+ *    GeoTools - The Open Source Java GIS Toolkit
+ *    http://geotools.org
+ *
+ *    (C) 2019, Open Source Geospatial Foundation (OSGeo)
+ *
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation;
+ *    version 2.1 of the License.
+ *
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    Lesser General Public License for more details.
+ */
 package org.geotools.ows.wms.map;
 
 import java.awt.Color;
@@ -15,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.IOUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -284,17 +299,14 @@ public class WMSCoverageReader extends AbstractGridCoverage2DReader {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Issuing request: " + mapRequest.getFinalURL());
             }
-            InputStream is = null;
             GetMapResponse response = wms.issueRequest(mapRequest);
-            try {
-                is = response.getInputStream();
+            try (InputStream is = response.getInputStream()) {
                 RenderedImage image = ImageIOExt.read(is);
                 if (image == null) {
                     throw new IOException("GetMap failed: " + mapRequest.getFinalURL());
                 }
                 return gcf.create(layers.get(0).getLayer().getTitle(), image, gridEnvelope);
             } finally {
-                IOUtils.closeQuietly(is);
                 response.dispose();
             }
         } catch (ServiceException e) {
@@ -333,7 +345,7 @@ public class WMSCoverageReader extends AbstractGridCoverage2DReader {
                 requestSrs = code;
             } else {
                 // first reproject to the map CRS
-                gridEnvelope = bbox.transform(getCrs(), true);
+                gridEnvelope = bbox.transform(getCoordinateReferenceSystem(), true);
 
                 // then adjust the form factor
                 if (gridEnvelope.getWidth() < gridEnvelope.getHeight()) {

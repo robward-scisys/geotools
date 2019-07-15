@@ -414,7 +414,6 @@ public class PreGeneralizedFeatureSource implements SimpleFeatureSource {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        ;
 
         hints.add(Hints.GEOMETRY_DISTANCE); // always supported
         supportedHints = Collections.unmodifiableSet(hints);
@@ -498,7 +497,6 @@ public class PreGeneralizedFeatureSource implements SimpleFeatureSource {
     }
 
     /**
-     * @param query the query object
      * @param fs the backend feature surce
      * @return Proxy modified for backend feature source
      *     <p>create a proxy for the origianl query object 1) typeName has to be changed to backend

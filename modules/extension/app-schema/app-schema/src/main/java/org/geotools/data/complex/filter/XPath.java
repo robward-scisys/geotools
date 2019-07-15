@@ -209,12 +209,12 @@ public class XPath extends XPathUtil {
 
         Iterator stepsIterator = steps.iterator();
 
-        for (; stepsIterator.hasNext(); ) {
+        while (stepsIterator.hasNext()) {
             final XPath.Step currStep = (Step) stepsIterator.next();
             AttributeDescriptor currStepDescriptor = null;
             final boolean isLastStep = !stepsIterator.hasNext();
             final QName stepName = currStep.getName();
-            final Name attributeName = Types.toName(stepName);
+            final Name attributeName = org.geotools.feature.type.Types.toTypeName(stepName);
 
             final AttributeType _parentType = parent.getType();
             if (_parentType.getName().equals(XSSchema.ANYTYPE_TYPE.getName())
@@ -412,6 +412,7 @@ public class XPath extends XPathUtil {
         }
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private Attribute setLeafAttribute(
             AttributeDescriptor currStepDescriptor,
             Step currStep,

@@ -53,16 +53,6 @@ final class GridCoverageRendererUtilities {
     private static final CoverageProcessor processor =
             CoverageProcessor.getInstance(new Hints(Hints.LENIENT_DATUM_SHIFT, Boolean.TRUE));
 
-    static {
-
-        // ///////////////////////////////////////////////////////////////////
-        //
-        // Caching parameters for performing the various operations.
-        //
-        // ///////////////////////////////////////////////////////////////////
-
-    }
-
     // FORMULAE FOR FORWARD MAP are derived as follows
     //     Nearest
     //        Minimum:
@@ -127,7 +117,7 @@ final class GridCoverageRendererUtilities {
      * IllegalArgumentException} exception.
      *
      * @param source the object to check.
-     * @param node the operation we are trying to run.
+     * @param name the operation we are trying to run.
      */
     static void ensureNotNull(final Object source, final String name) {
         if (source == null)
@@ -139,7 +129,7 @@ final class GridCoverageRendererUtilities {
      * IllegalArgumentException} exception.
      *
      * @param source the object to check.
-     * @param node the operation we are trying to run.
+     * @param name the operation we are trying to run.
      */
     static void ensureSourceNotNull(final Object source, final String name) {
         if (source == null)
@@ -432,7 +422,6 @@ final class GridCoverageRendererUtilities {
             throws Exception {
 
         GeneralEnvelope outputEnvelope = null;
-        ;
         CoordinateReferenceSystem inputCRS = inputEnvelope.getCoordinateReferenceSystem();
         if (!CRS.equalsIgnoreMetadata(inputCRS, outputCRS)) {
             outputEnvelope = CRS.transform(inputEnvelope, outputCRS);

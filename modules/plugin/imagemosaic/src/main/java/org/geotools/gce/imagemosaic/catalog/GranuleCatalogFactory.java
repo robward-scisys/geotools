@@ -128,7 +128,7 @@ public abstract class GranuleCatalogFactory {
             File parentDirectory = URLs.urlToFile(sourceURL);
             if (parentDirectory.isFile()) parentDirectory = parentDirectory.getParentFile();
             params.put(Utils.Prop.PARENT_LOCATION, URLs.fileToUrl(parentDirectory).toString());
-        } else params.put(Utils.Prop.PARENT_LOCATION, null);
+        }
         // add typename
         String typeName = catalogConfigurationBean.getTypeName();
         if (typeName != null) {
@@ -163,7 +163,9 @@ public abstract class GranuleCatalogFactory {
             final String SPIClass = properties.getProperty("SPI");
             try {
                 // create a datastore as instructed
-                spi = (DataStoreFactorySpi) Class.forName(SPIClass).newInstance();
+                spi =
+                        (DataStoreFactorySpi)
+                                Class.forName(SPIClass).getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 // if we are directed to use a pre-existing store then don't complain about lack of
                 // SPI
